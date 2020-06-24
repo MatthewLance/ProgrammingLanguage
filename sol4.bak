@@ -1,0 +1,71 @@
+#lang racket
+
+*|
+(define tbst1 '(8 (3 (1 () ()) (6 (4 () ()) (7 () ()))) (10 () (14 (13 ()()) ()))))
+(define tbst2 '(6 (4 ()()) (7 ()())))
+(define fbst1 '(6 (7 ()()) (8 ()())))
+|*
+(define (get_min xs)
+  (let
+      ([parent (car xs)]
+       [lchild (car (cdr xs))]
+       )
+    (if (null? lchild)
+        parent
+        (begin 
+               (display parent)
+               (display  "\n")
+               (get_min lchild)
+        ))))
+
+(define (check_bst xs)
+  (if (null? xs)
+      #t
+      (letrec ([node (car xs)]
+               [lchild (car (cdr xs))]
+               [rchild (cadr (cdr xs))])
+        (cond [(and (null? lchild) (null? rchild)) #t]
+              [(null? lchild)
+               (and (check_bst rchild) (< node (car rchild)))]
+              [(null? rchild)
+               (and (check_bst lchild) (> node (car lchild)))]     
+              [#t (and (> node (car lchild)) (< node (car rchild)))]
+              ))))
+
+(define (apply f xs)
+  (if (null? xs)
+      '()
+      (letrec ([node (car xs)]
+               [lchild (car (cdr xs))]
+               [rchild (cadr (cdr xs))])
+        (cond [(and (null? lchild) (null? rchild))
+               (list (f node) '() '())]
+              [(null? lchild)
+               (list (f node) '() (apply f rchild))]
+              [(null? rchild)
+               (list (f node) (apply f lchild) '())]     
+              [#t
+               (list (f node) (apply f lchild) (apply f rchild))]
+              ))))
+
+(define (extract xs)
+    (if (null? xs)
+      '()
+      (letrec ([node (car xs)]
+               [lchild (car (cdr xs))]
+               [rchild (cadr (cdr xs))])
+        (cond [(and (null? lchild) (null? rchild))
+               (list node)]
+              [(null? lchild)
+               (append (list node) (extract rchild))]
+              [(null? rchild)
+               (append (extract lchild) (list node))]     
+              [#t
+               (append (extract lchild) (list node) (extract rchild))]
+              ))))
+
+(define (equals xs ys)
+  (letrec ([xout (extract xs)]
+           [yout (extract ys)])
+           (equal? xout yout)))
+           
